@@ -5,11 +5,17 @@ using System.Collections;
 abstract class State
 {
 	public abstract void printName();
-	protected GameObject player = playerMovement.getPlayer();
-	protected GameObject groundCheck = playerMovement.getGroundCheck();
+	protected GameObject player;
+	protected GameObject groundCheck;
 	public abstract void jumpActions ();
 	public abstract State stateActions ();
 	
+	public State(GameObject playerReference, GameObject groundCheckReference)
+	{
+		player = playerReference;
+		groundCheck = groundCheckReference;
+	}
+
 	protected bool checkForGround()
 	{
 		int checkIndex = -1;
@@ -30,6 +36,8 @@ abstract class State
 
 class Grounded : State
 {
+	public Grounded(GameObject playerReference, GameObject groundCheckReference) : base(playerReference, groundCheckReference) {}
+
 	public override void printName() { Debug.Log ("Grounded"); }
 	public override void jumpActions()
 	{
@@ -40,12 +48,12 @@ class Grounded : State
 	{
 		if (!checkForGround())
 		{
-			return new FallingBeforeSecondJump();
+			return new FallingBeforeSecondJump(player, groundCheck);
 		}
 		else if (Input.GetButtonDown ("Jump"))
 		{
 			jumpActions();
-			return new Jumping();
+			return new Jumping(player, groundCheck);
 		}
 		else
 		{
@@ -56,6 +64,8 @@ class Grounded : State
 
 class Jumping : State
 {
+	public Jumping(GameObject playerReference, GameObject groundCheckReference) : base(playerReference, groundCheckReference) {}
+
 	public override void printName() { Debug.Log ("Jumping"); }
 	public override void jumpActions()
 	{
@@ -66,16 +76,16 @@ class Jumping : State
 	{
 		if (checkForGround ())
 		{
-				return new Grounded ();
+			return new Grounded (player, groundCheck);
 		}
 		else if (Input.GetButtonDown ("Jump"))
 		{
 				jumpActions ();
-				return new DoubleJumping ();
+			return new DoubleJumping (player, groundCheck);
 		}
 		else if (isOnDownwardArc())
 		{
-			return new FallingBeforeSecondJump();
+			return new FallingBeforeSecondJump(player, groundCheck);
 		}
 		else
 		{
@@ -95,22 +105,24 @@ class Jumping : State
 
 class FallingBeforeSecondJump : Jumping
 {
+	public FallingBeforeSecondJump(GameObject playerReference, GameObject groundCheckReference) : base(playerReference, groundCheckReference) {}
+
 	public override void printName() { Debug.Log ("FallingBeforeSecondJump"); }
 	
 	public override State stateActions()
 	{
 		if (checkForGround())
 		{
-			return new Grounded();
+			return new Grounded(player, groundCheck);
 		}
 		else if (Input.GetButtonDown ("Jump"))
 		{
 			jumpActions();
-			return new DoubleJumping();
+			return new DoubleJumping(player, groundCheck);
 		}
 		else if (Input.GetButton("Jump"))
 		{
-			return new FloatingBeforeSecondJump();
+			return new FloatingBeforeSecondJump(player, groundCheck);
 		}
 		else
 		{
@@ -121,6 +133,8 @@ class FallingBeforeSecondJump : Jumping
 
 class FloatingBeforeSecondJump : State
 {
+	public FloatingBeforeSecondJump(GameObject playerReference, GameObject groundCheckReference) : base(playerReference, groundCheckReference) {}
+
 	public override void printName() { Debug.Log ("FloatingBeforeSecondJump"); }
 	public override void jumpActions()
 	{
@@ -131,11 +145,11 @@ class FloatingBeforeSecondJump : State
 	{
 		if (checkForGround())
 		{
-			return new Grounded();
+			return new Grounded(player, groundCheck);
 		}
 		else if (Input.GetButtonUp ("Jump"))
 		{
-			return new FallingBeforeSecondJump();
+			return new FallingBeforeSecondJump(player, groundCheck);
 		}
 		else
 		{
@@ -147,6 +161,8 @@ class FloatingBeforeSecondJump : State
 
 class DoubleJumping : Jumping
 {
+	public DoubleJumping(GameObject playerReference, GameObject groundCheckReference) : base(playerReference, groundCheckReference) {}
+
 	public override void printName() { Debug.Log ("DoubleJumping"); }
 	public override void jumpActions()
 	{
@@ -160,7 +176,7 @@ class DoubleJumping : Jumping
 	{
 		if (checkForGround())
 		{
-			return new Grounded();
+			return new Grounded(player, groundCheck);
 		}
 		else if (Input.GetButton ("Jump"))
 		{
@@ -175,17 +191,19 @@ class DoubleJumping : Jumping
 }
 class FallingAfterSecondJump : Jumping
 {
+	public FallingAfterSecondJump(GameObject playerReference, GameObject groundCheckReference) : base(playerReference, groundCheckReference) {}
+
 	public override void printName() { Debug.Log ("FallingBeforeSecondJump"); }
 	
 	public override State stateActions()
 	{
 		if (checkForGround())
 		{
-			return new Grounded();
+			return new Grounded(player, groundCheck);
 		}
 		else if (Input.GetButton("Jump"))
 		{
-			return new FloatingAfterSecondJump();
+			return new FloatingAfterSecondJump(player, groundCheck);
 		}
 		else
 		{
@@ -196,6 +214,8 @@ class FallingAfterSecondJump : Jumping
 
 class FloatingAfterSecondJump : State
 {
+	public FloatingAfterSecondJump(GameObject playerReference, GameObject groundCheckReference) : base(playerReference, groundCheckReference) {}
+
 	public override void printName() { Debug.Log ("FloatingBeforeSecondJump"); }
 	public override void jumpActions()
 	{
@@ -206,11 +226,11 @@ class FloatingAfterSecondJump : State
 	{
 		if (checkForGround())
 		{
-			return new Grounded();
+			return new Grounded(player, groundCheck);
 		}
 		else if (Input.GetButtonUp ("Jump"))
 		{
-			return new FallingAfterSecondJump();
+			return new FallingAfterSecondJump(player, groundCheck);
 		}
 		else
 		{
@@ -236,7 +256,7 @@ public class playerMovement : MonoBehaviour {
 		groundCheck = GameObject.FindGameObjectWithTag ("groundCheck");
 		player = GameObject.FindGameObjectWithTag ("Player");
 		_jumpForce = jumpForce;
-		playerState = new Grounded ();
+		playerState = new Grounded (player, groundCheck);
 	}
 
 	// Update is called once per frame
