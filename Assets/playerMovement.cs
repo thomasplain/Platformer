@@ -28,6 +28,32 @@ abstract class State
 	}
 }
 
+class Grounded : State
+{
+	public override void printName() { Debug.Log ("Grounded"); }
+	public override void jumpActions()
+	{
+		player.rigidbody2D.AddForce (Vector2.up * playerMovement._jumpForce);
+	}
+	
+	public override State stateActions()
+	{
+		if (!checkForGround())
+		{
+			return new FallingBeforeSecondJump();
+		}
+		else if (Input.GetButtonDown ("Jump"))
+		{
+			jumpActions();
+			return new Jumping();
+		}
+		else
+		{
+			return this;
+		}
+	}
+}
+
 class Jumping : State
 {
 	public override void printName() { Debug.Log ("Jumping"); }
@@ -38,13 +64,21 @@ class Jumping : State
 	}
 	public override State stateActions ()
 	{
-		if (checkForGround ()) {
+		if (checkForGround ())
+		{
 				return new Grounded ();
-		} else {
-				if (Input.GetButtonDown ("Jump")) {
-						jumpActions ();
-						return new Falling ();
-				}
+		}
+		else if (Input.GetButtonDown ("Jump"))
+		{
+				jumpActions ();
+				return new DoubleJumping ();
+		}
+		else if (isOnDownwardArc())
+		{
+			return new FallingBeforeSecondJump();
+		}
+		else
+		{
 				return this;
 		}
 	}
@@ -52,9 +86,66 @@ class Jumping : State
 	{
 		player.rigidbody2D.velocity = new Vector2 (player.rigidbody2D.velocity.x, 0);
 	}
+
+	protected bool isOnDownwardArc()
+	{
+		return player.rigidbody2D.velocity.y <= 0;
+	}
 }
 
-class Falling : Jumping
+class FallingBeforeSecondJump : Jumping
+{
+	public override void printName() { Debug.Log ("FallingBeforeSecondJump"); }
+	
+	public override State stateActions()
+	{
+		if (checkForGround())
+		{
+			return new Grounded();
+		}
+		else if (Input.GetButtonDown ("Jump"))
+		{
+			jumpActions();
+			return new DoubleJumping();
+		}
+		else if (Input.GetButton("Jump"))
+		{
+			return new FloatingBeforeSecondJump();
+		}
+		else
+		{
+			return this;
+		}
+	}
+}
+
+class FloatingBeforeSecondJump : State
+{
+	public override void printName() { Debug.Log ("FloatingBeforeSecondJump"); }
+	public override void jumpActions()
+	{
+		player.rigidbody2D.velocity = new Vector2(player.rigidbody2D.velocity.x, -5);
+	}
+	
+	public override State stateActions()
+	{
+		if (checkForGround())
+		{
+			return new Grounded();
+		}
+		else if (Input.GetButtonUp ("Jump"))
+		{
+			return new FallingBeforeSecondJump();
+		}
+		else
+		{
+			jumpActions ();
+			return this;
+		}
+	}
+}
+
+class DoubleJumping : Jumping
 {
 	public override void printName() { Debug.Log ("DoubleJumping"); }
 	public override void jumpActions()
@@ -71,38 +162,59 @@ class Falling : Jumping
 		{
 			return new Grounded();
 		}
+		else if (Input.GetButton ("Jump"))
+		{
+			jumpActions ();
+			return this;
+		}
 		else
 		{
-			if (Input.GetButton ("Jump"))
-			{
-				jumpActions ();
-			}
+			return this;
+		}
+	}
+}
+class FallingAfterSecondJump : Jumping
+{
+	public override void printName() { Debug.Log ("FallingBeforeSecondJump"); }
+	
+	public override State stateActions()
+	{
+		if (checkForGround())
+		{
+			return new Grounded();
+		}
+		else if (Input.GetButton("Jump"))
+		{
+			return new FloatingAfterSecondJump();
+		}
+		else
+		{
 			return this;
 		}
 	}
 }
 
-class Grounded : State
+class FloatingAfterSecondJump : State
 {
-	public override void printName() { Debug.Log ("Grounded"); }
+	public override void printName() { Debug.Log ("FloatingBeforeSecondJump"); }
 	public override void jumpActions()
 	{
-		player.rigidbody2D.AddForce (Vector2.up * playerMovement._jumpForce);
+		player.rigidbody2D.velocity = new Vector2(player.rigidbody2D.velocity.x, -5);
 	}
-
+	
 	public override State stateActions()
 	{
-		if (!checkForGround())
+		if (checkForGround())
 		{
-			return new Jumping();
+			return new Grounded();
 		}
-		else if (Input.GetButtonDown ("Jump"))
+		else if (Input.GetButtonUp ("Jump"))
 		{
-			jumpActions();
-			return new Jumping();
+			return new FallingAfterSecondJump();
 		}
 		else
 		{
+			jumpActions ();
 			return this;
 		}
 	}
