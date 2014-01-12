@@ -9,6 +9,11 @@ namespace playerStateMechanics
 		protected GameObject player;
 		protected GameObject groundCheck;
 		protected float jumpForce;
+		protected virtual bool isNull()
+		{
+			return false;
+		}
+
 		public abstract void jumpActions ();
 		public abstract State stateActions ();
 		
