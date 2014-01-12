@@ -19,10 +19,12 @@ public class playerMovement : MonoBehaviour {
 		player = GameObject.FindGameObjectWithTag ("Player");
 		playerState = new Grounded (player, groundCheck, jumpForce);
 	}
-
-	// Update is called once per frame
+	
 	void FixedUpdate () {
 		float h = Input.GetAxis ("Horizontal");
+
+		if (!playerState.generalStateActions ().isNull ())
+						playerState = playerState.generalStateActions ();
 
 		playerState = playerState.stateActions ();
 

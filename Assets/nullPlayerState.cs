@@ -11,12 +11,13 @@ namespace playerStateMechanics
 		public override void jumpActions ()
 		{
 		}
+
 		public override State stateActions ()
 		{
 			return this;
 		}
 
-		protected override bool isNull()
+		public override bool isNull()
 		{
 			return true;
 		}

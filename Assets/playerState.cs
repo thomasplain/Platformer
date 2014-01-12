@@ -9,13 +9,20 @@ namespace playerStateMechanics
 		protected GameObject player;
 		protected GameObject groundCheck;
 		protected float jumpForce;
-		protected virtual bool isNull()
+		public virtual bool isNull()
 		{
 			return false;
 		}
 
 		public abstract void jumpActions ();
 		public abstract State stateActions ();
+		public State generalStateActions ()
+		{
+			if (checkForGround ())
+					return new Grounded (player, groundCheck, jumpForce);
+
+			return new nullPlayerState (player, groundCheck, jumpForce);
+		}
 		
 		public State(GameObject playerReference, GameObject groundCheckReference, float playerJumpForce)
 		{
@@ -84,11 +91,7 @@ namespace playerStateMechanics
 		}
 		public override State stateActions ()
 		{
-			if (checkForGround ())
-			{
-				return new Grounded (player, groundCheck, jumpForce);
-			}
-			else if (Input.GetButtonDown ("Jump"))
+			if (Input.GetButtonDown ("Jump"))
 			{
 				jumpActions ();
 				return new DoubleJumping (player, groundCheck, jumpForce);
@@ -122,11 +125,7 @@ namespace playerStateMechanics
 		
 		public override State stateActions()
 		{
-			if (checkForGround())
-			{
-				return new Grounded(player, groundCheck, jumpForce);
-			}
-			else if (Input.GetButtonDown ("Jump"))
+			if (Input.GetButtonDown ("Jump"))
 			{
 				jumpActions();
 				return new DoubleJumping(player, groundCheck, jumpForce);
@@ -155,11 +154,7 @@ namespace playerStateMechanics
 		
 		public override State stateActions()
 		{
-			if (checkForGround())
-			{
-				return new Grounded(player, groundCheck, jumpForce);
-			}
-			else if (Input.GetButtonUp ("Jump"))
+			if (Input.GetButtonUp ("Jump"))
 			{
 				return getFallingState();
 			}
@@ -192,11 +187,7 @@ namespace playerStateMechanics
 		}
 		public override State stateActions ()
 		{
-			if (checkForGround())
-			{
-				return new Grounded(player, groundCheck, jumpForce);
-			}
-			else if (isOnDownwardArc())
+			if (isOnDownwardArc())
 			{
 				return new FallingAfterSecondJump(player, groundCheck, jumpForce);
 			}
@@ -215,11 +206,7 @@ namespace playerStateMechanics
 		
 		public override State stateActions()
 		{
-			if (checkForGround())
-			{
-				return new Grounded(player, groundCheck, jumpForce);
-			}
-			else if (Input.GetButton("Jump"))
+			if (Input.GetButton("Jump"))
 			{
 				return new FloatingAfterSecondJump(player, groundCheck, jumpForce);
 			}
