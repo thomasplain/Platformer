@@ -10,7 +10,6 @@ public class playerMovement : MonoBehaviour {
 	private State playerState;
 	static private GameObject player;
 
-	static public float _jumpForce;
 	public float jumpForce = 1000f;
 	public float maxSpeed = 15f;
 
@@ -18,7 +17,6 @@ public class playerMovement : MonoBehaviour {
 	{
 		groundCheck = GameObject.FindGameObjectWithTag ("groundCheck");
 		player = GameObject.FindGameObjectWithTag ("Player");
-		_jumpForce = jumpForce;
 		playerState = new Grounded (player, groundCheck, jumpForce);
 	}
 
@@ -31,15 +29,5 @@ public class playerMovement : MonoBehaviour {
 		Vector3 horizontalVelocity = Vector3.right * h * maxSpeed * Time.deltaTime; 
 
 		transform.position += horizontalVelocity;	
-	}
-
-	static public GameObject getPlayer()
-	{
-		return player;
-	}
-
-	static public GameObject getGroundCheck()
-	{
-		return groundCheck;
 	}
 }
