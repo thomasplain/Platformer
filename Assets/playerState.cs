@@ -18,8 +18,31 @@ namespace playerStateMechanics
 		public abstract State stateActions ();
 		public State generalStateActions ()
 		{
+			if (Input.GetButtonDown("Fire1"))
+			{
+				float horizontal = Input.GetAxis ("Horizontal");
+				float vertical = Input.GetAxis ("Vertical");
+				if (vertical > 0)
+				{
+					Debug.Log ("Attack up!");
+				}
+				else if (vertical < 0)
+				{
+					return new Stomping (player, groundCheck, jumpForce);
+				}
+				else if (Mathf.Sign(horizontal) > 0)
+				{
+					Debug.Log ("Attack right!");
+				}
+				else if (Mathf.Sign(horizontal) <= 0)
+				{
+					Debug.Log ("Attack left!");
+				}
+			}
+
 			if (checkForGround ())
 					return new Grounded (player, groundCheck, jumpForce);
+
 
 			return new nullPlayerState (player, groundCheck, jumpForce);
 		}
@@ -75,6 +98,23 @@ namespace playerStateMechanics
 			{
 				return this;
 			}
+		}
+	}
+
+	class Stomping : State
+	{
+		public Stomping(GameObject playerReference, GameObject groundCheckReference, float playerJumpForce) : 
+			base(playerReference, groundCheckReference, playerJumpForce) {}
+		
+		public override void printName() { Debug.Log ("Stomping"); }
+		public override void jumpActions()
+		{
+		}
+		
+		public override State stateActions()
+		{
+			player.rigidbody2D.AddForce (Vector2.up * -1000f);
+			return this;
 		}
 	}
 	
