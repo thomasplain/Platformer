@@ -4,8 +4,7 @@ namespace playerStateMechanics
 {
 	class nullPlayerState : State
 	{
-		public nullPlayerState(GameObject playerReference, GameObject groundCheckReference, float playerJumpForce) :
-		base(playerReference, groundCheckReference, playerJumpForce) {}
+		public nullPlayerState(StateConstructorArgs constructorArgs) : base(constructorArgs) {}
 
 		public override void printName() { Debug.Log ("Null"); }
 		public override void jumpActions ()

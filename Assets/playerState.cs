@@ -3,12 +3,29 @@ using System.Collections;
 
 namespace playerStateMechanics
 {
+	class StateConstructorArgs
+	{
+		public GameObject groundCheck;
+		public GameObject player;
+		public float jumpForce;
+		public GameObject projectilePrefab;
+		public float projectileForce;
+
+		public StateConstructorArgs(GameObject playerArg, GameObject groundCheckArg, float jumpForceArg, GameObject projectileArg, float projForceArg)
+		{
+			player = playerArg;
+			groundCheck = groundCheckArg;
+			jumpForce = jumpForceArg;
+			projectilePrefab = projectileArg;
+			projectileForce = projForceArg;
+		}
+	}
+
 	abstract class State
 	{
 		public abstract void printName();
-		protected GameObject player;
-		protected GameObject groundCheck;
-		protected float jumpForce;
+		protected StateConstructorArgs playerInfo;
+
 		public virtual bool isNull()
 		{
 			return false;
@@ -18,52 +35,64 @@ namespace playerStateMechanics
 		public abstract State stateActions ();
 		public State generalStateActions ()
 		{
+			float horizontal = Input.GetAxis ("Horizontal");
+			float vertical = Input.GetAxis ("Vertical");
+
+			Vector3 relativeProjectileStartPosition = Vector3.zero;
+
 			if (Input.GetButtonDown("Fire1"))
 			{
-				float horizontal = Input.GetAxis ("Horizontal");
-				float vertical = Input.GetAxis ("Vertical");
+				if (vertical < 0)
+				{
+					return new Stomping (playerInfo);
+				}
+
 				if (vertical > 0)
 				{
-					Debug.Log ("Attack up!");
+					relativeProjectileStartPosition.y = 1.25f;
 				}
-				else if (vertical < 0)
+				else
 				{
-					return new Stomping (player, groundCheck, jumpForce);
+					horizontal = horizontal >= 0 ? 1 : -1;
+					relativeProjectileStartPosition.x = horizontal * 1.25f;
 				}
-				else if (Mathf.Sign(horizontal) > 0)
-				{
-					Debug.Log ("Attack right!");
-				}
-				else if (Mathf.Sign(horizontal) <= 0)
-				{
-					Debug.Log ("Attack left!");
-				}
+
+				
+				GameObject projectile = (GameObject)GameObject.Instantiate(playerInfo.projectilePrefab, 
+				                                                           playerInfo.player.transform.position + relativeProjectileStartPosition,
+				                                                           playerInfo.player.transform.rotation);
+				projectile.rigidbody2D.AddForce(relativeProjectileStartPosition * playerInfo.projectileForce);
+			}
+				
+			if (checkForGround ())
+			{
+					this.hitGroundActions();
+					return new Grounded (playerInfo);
 			}
 
-			if (checkForGround ())
-					return new Grounded (player, groundCheck, jumpForce);
 
+			return new nullPlayerState (playerInfo);
+		}
 
-			return new nullPlayerState (player, groundCheck, jumpForce);
+		protected virtual void hitGroundActions()
+		{
 		}
 		
-		public State(GameObject playerReference, GameObject groundCheckReference, float playerJumpForce)
+		public State(StateConstructorArgs constructorArgs)
 		{
-			player = playerReference;
-			groundCheck = groundCheckReference;
-			jumpForce = playerJumpForce;
+			playerInfo = constructorArgs;
 		}
 		
 		protected bool checkForGround()
 		{
 			int checkIndex = -1;
-			float playerSizeX = player.renderer.bounds.size.x;
+			float playerSizeX = playerInfo.player.renderer.bounds.size.x;
 			bool grounded = false;
 			while (checkIndex < 2)
 			{
 				Vector3 offset = Vector3.right * playerSizeX * checkIndex / 2f;
-				Vector3 fromPoint = player.transform.position + offset;
-				Vector3 toPoint = groundCheck.transform.position + offset;
+				Vector3 fromPoint = playerInfo.player.transform.position + offset;
+				Vector3 toPoint = playerInfo.groundCheck.transform.position + offset;
 				grounded = grounded || Physics2D.Linecast (fromPoint, toPoint, 1 << LayerMask.NameToLayer("ground"));
 				checkIndex++;
 			}
@@ -74,25 +103,24 @@ namespace playerStateMechanics
 
 	class Grounded : State
 	{
-		public Grounded(GameObject playerReference, GameObject groundCheckReference, float playerJumpForce) : 
-			base(playerReference, groundCheckReference, playerJumpForce) {}
+		public Grounded(StateConstructorArgs constructorArgs) : base(constructorArgs) {}
 		
 		public override void printName() { Debug.Log ("Grounded"); }
 		public override void jumpActions()
 		{
-			player.rigidbody2D.AddForce (Vector2.up * jumpForce);
+			playerInfo.player.rigidbody2D.AddForce (Vector2.up * playerInfo.jumpForce);
 		}
 		
 		public override State stateActions()
 		{
 			if (!checkForGround())
 			{
-				return new FallingBeforeSecondJump(player, groundCheck, jumpForce);
+				return new FallingBeforeSecondJump(playerInfo);
 			}
 			else if (Input.GetButtonDown ("Jump"))
 			{
 				jumpActions();
-				return new Jumping(player, groundCheck, jumpForce);
+				return new Jumping(playerInfo);
 			}
 			else
 			{
@@ -103,8 +131,7 @@ namespace playerStateMechanics
 
 	class Stomping : State
 	{
-		public Stomping(GameObject playerReference, GameObject groundCheckReference, float playerJumpForce) : 
-			base(playerReference, groundCheckReference, playerJumpForce) {}
+		public Stomping(StateConstructorArgs constructorArgs) : base(constructorArgs) {}
 		
 		public override void printName() { Debug.Log ("Stomping"); }
 		public override void jumpActions()
@@ -113,32 +140,37 @@ namespace playerStateMechanics
 		
 		public override State stateActions()
 		{
-			player.rigidbody2D.AddForce (Vector2.up * -1000f);
+			playerInfo.player.rigidbody2D.AddForce (Vector2.up * -1000f);
 			return this;
+		}
+
+		protected override void hitGroundActions()
+		{
+			//CircleCollider2D cc = (CircleCollider2D) GameObject.Instantiate(CircleCollider2D, playerInfo.player.transform.position);
+			//cc.radius = 10;
 		}
 	}
 	
 	class Jumping : State
 	{
-		public Jumping(GameObject playerReference, GameObject groundCheckReference, float playerJumpForce) : 
-			base(playerReference, groundCheckReference, playerJumpForce) {}
+		public Jumping(StateConstructorArgs constructorArgs) : base(constructorArgs) {}
 		
 		public override void printName() { Debug.Log ("Jumping"); }
 		public override void jumpActions()
 		{
 			zeroPlayerVelocity ();
-			player.rigidbody2D.AddForce (Vector2.up * jumpForce);
+			playerInfo.player.rigidbody2D.AddForce (Vector2.up * playerInfo.jumpForce);
 		}
 		public override State stateActions ()
 		{
 			if (Input.GetButtonDown ("Jump"))
 			{
 				jumpActions ();
-				return new DoubleJumping (player, groundCheck, jumpForce);
+				return new DoubleJumping (playerInfo);
 			}
 			else if (isOnDownwardArc())
 			{
-				return new FallingBeforeSecondJump(player, groundCheck, jumpForce);
+				return new FallingBeforeSecondJump(playerInfo);
 			}
 			else
 			{
@@ -147,19 +179,18 @@ namespace playerStateMechanics
 		}
 		public void zeroPlayerVelocity()
 		{
-			player.rigidbody2D.velocity = new Vector2 (player.rigidbody2D.velocity.x, 0);
+			playerInfo.player.rigidbody2D.velocity = new Vector2 (playerInfo.player.rigidbody2D.velocity.x, 0);
 		}
 		
 		protected bool isOnDownwardArc()
 		{
-			return player.rigidbody2D.velocity.y <= 0;
+			return playerInfo.player.rigidbody2D.velocity.y <= 0;
 		}
 	}
 	
 	class FallingBeforeSecondJump : Jumping
 	{
-		public FallingBeforeSecondJump(GameObject playerReference, GameObject groundCheckReference, float playerJumpForce) : 
-			base(playerReference, groundCheckReference, playerJumpForce) {}
+		public FallingBeforeSecondJump(StateConstructorArgs constructorArgs) : base(constructorArgs) {}
 		
 		public override void printName() { Debug.Log ("FallingBeforeSecondJump"); }
 		
@@ -168,11 +199,11 @@ namespace playerStateMechanics
 			if (Input.GetButtonDown ("Jump"))
 			{
 				jumpActions();
-				return new DoubleJumping(player, groundCheck, jumpForce);
+				return new DoubleJumping(playerInfo);
 			}
 			else if (Input.GetButton("Jump"))
 			{
-				return new FloatingBeforeSecondJump(player, groundCheck, jumpForce);
+				return new FloatingBeforeSecondJump(playerInfo);
 			}
 			else
 			{
@@ -183,13 +214,12 @@ namespace playerStateMechanics
 	
 	class FloatingBeforeSecondJump : State
 	{
-		public FloatingBeforeSecondJump(GameObject playerReference, GameObject groundCheckReference, float playerJumpForce) : 
-			base(playerReference, groundCheckReference, playerJumpForce) {}
+		public FloatingBeforeSecondJump(StateConstructorArgs constructorArgs) : base(constructorArgs) {}
 		
 		public override void printName() { Debug.Log ("FloatingBeforeSecondJump"); }
 		public override void jumpActions()
 		{
-			player.rigidbody2D.velocity = new Vector2(player.rigidbody2D.velocity.x, -5);
+			playerInfo.player.rigidbody2D.velocity = new Vector2(playerInfo.player.rigidbody2D.velocity.x, -5);
 		}
 		
 		public override State stateActions()
@@ -207,29 +237,28 @@ namespace playerStateMechanics
 
 		protected virtual State getFallingState()
 		{
-			return new FallingBeforeSecondJump(player, groundCheck, jumpForce);
+			return new FallingBeforeSecondJump(playerInfo);
 		}
 	}
 	
 	class DoubleJumping : Jumping
 	{
-		public DoubleJumping(GameObject playerReference, GameObject groundCheckReference, float playerJumpForce) : 
-			base(playerReference, groundCheckReference, playerJumpForce) {}
+		public DoubleJumping(StateConstructorArgs constructorArgs) : base(constructorArgs) {}
 		
 		public override void printName() { Debug.Log ("DoubleJumping"); }
 		public override void jumpActions()
 		{
 			// On downward arc
-			if (player.rigidbody2D.velocity.y <= 0)
+			if (playerInfo.player.rigidbody2D.velocity.y <= 0)
 			{
-				player.rigidbody2D.velocity = new Vector2(player.rigidbody2D.velocity.x, -5);
+				playerInfo.player.rigidbody2D.velocity = new Vector2(playerInfo.player.rigidbody2D.velocity.x, -5);
 			}
 		}
 		public override State stateActions ()
 		{
 			if (isOnDownwardArc())
 			{
-				return new FallingAfterSecondJump(player, groundCheck, jumpForce);
+				return new FallingAfterSecondJump(playerInfo);
 			}
 			else
 			{
@@ -239,8 +268,7 @@ namespace playerStateMechanics
 	}
 	class FallingAfterSecondJump : Jumping
 	{
-		public FallingAfterSecondJump(GameObject playerReference, GameObject groundCheckReference, float playerJumpForce) : 
-			base(playerReference, groundCheckReference, playerJumpForce) {}
+		public FallingAfterSecondJump(StateConstructorArgs constructorArgs) : base(constructorArgs) {}
 		
 		public override void printName() { Debug.Log ("FallingBeforeSecondJump"); }
 		
@@ -248,7 +276,7 @@ namespace playerStateMechanics
 		{
 			if (Input.GetButton("Jump"))
 			{
-				return new FloatingAfterSecondJump(player, groundCheck, jumpForce);
+				return new FloatingAfterSecondJump(playerInfo);
 			}
 			else
 			{
@@ -259,14 +287,13 @@ namespace playerStateMechanics
 	
 	class FloatingAfterSecondJump : FloatingBeforeSecondJump
 	{
-		public FloatingAfterSecondJump(GameObject playerReference, GameObject groundCheckReference, float playerJumpForce) : 
-			base(playerReference, groundCheckReference, playerJumpForce) {}
+		public FloatingAfterSecondJump(StateConstructorArgs constructorArgs) : base(constructorArgs) {}
 		
 		public override void printName() { Debug.Log ("FloatingBeforeSecondJump"); }
 		
 		protected override State getFallingState()
 		{
-			return new FallingAfterSecondJump (player, groundCheck, jumpForce);
+			return new FallingAfterSecondJump (playerInfo);
 		}
 	}
 }

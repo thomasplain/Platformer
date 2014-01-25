@@ -11,20 +11,27 @@ public class playerMovement : MonoBehaviour {
 	static private GameObject player;
 
 	public float jumpForce = 1000f;
+	public float projectileForce = 500f;
 	public float maxSpeed = 15f;
+	public GameObject projectilePrefab;
 
 	void Awake()
 	{
 		groundCheck = GameObject.FindGameObjectWithTag ("groundCheck");
 		player = GameObject.FindGameObjectWithTag ("Player");
-		playerState = new Grounded (player, groundCheck, jumpForce);
+		playerState = new Grounded (new StateConstructorArgs(player, groundCheck, jumpForce, projectilePrefab, projectileForce));
+	}
+
+	void Update()
+	{
+		State nextState = playerState.generalStateActions ();
+		if (!nextState.isNull ())
+			playerState = nextState;
+
 	}
 	
 	void FixedUpdate () {
 		float h = Input.GetAxis ("Horizontal");
-
-		if (!playerState.generalStateActions ().isNull ())
-						playerState = playerState.generalStateActions ();
 
 		playerState = playerState.stateActions ();
 
