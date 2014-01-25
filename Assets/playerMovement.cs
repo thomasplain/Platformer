@@ -28,6 +28,8 @@ public class playerMovement : MonoBehaviour {
 		if (!nextState.isNull ())
 			playerState = nextState;
 
+		playerState = playerState.keypressActions ();
+
 	}
 	
 	void FixedUpdate () {
