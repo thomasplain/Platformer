@@ -8,14 +8,18 @@ namespace playerStateMechanics
 		public GameObject groundCheck;
 		public GameObject player;
 		public float jumpForce;
+		public float smallJumpForce;
 		public GameObject projectilePrefab;
 		public float projectileForce;
 
-		public StateConstructorArgs(GameObject playerArg, GameObject groundCheckArg, float jumpForceArg, GameObject projectileArg, float projForceArg)
+		public StateConstructorArgs(GameObject playerArg, GameObject groundCheckArg,
+		                            float jumpForceArg, float smallJumpForceArg,
+		                            GameObject projectileArg, float projForceArg)
 		{
 			player = playerArg;
 			groundCheck = groundCheckArg;
 			jumpForce = jumpForceArg;
+			smallJumpForce = smallJumpForceArg;
 			projectilePrefab = projectileArg;
 			projectileForce = projForceArg;
 		}
@@ -34,6 +38,16 @@ namespace playerStateMechanics
 		public virtual void jumpActions (){}
 		public virtual State keypressActions(){ return this; }
 		public abstract State stateActions ();
+		public virtual State collisionActions(Collision2D collision)
+		{ 
+			if (hittingEnemyFromAbove(collision))
+			{
+				GameObject.Destroy(collision.collider.gameObject);
+				return new StartJump(playerInfo);
+			}
+
+			return this;
+		}
 		public State generalStateActions ()
 		{
 			float horizontal = Input.GetAxis ("Horizontal");
@@ -102,6 +116,20 @@ namespace playerStateMechanics
 		{
 			playerInfo.player.rigidbody2D.velocity = new Vector2 (playerInfo.player.rigidbody2D.velocity.x, 0);
 		}
+
+		protected bool hittingEnemyFromAbove(Collision2D collision)
+		{
+			if (collision.collider.gameObject.tag != "enemy")
+								return false;
+
+			foreach (ContactPoint2D contactPoint in collision.contacts)
+			{
+				if (contactPoint.normal == Vector2.up)
+					return true;
+			}
+
+			return false;
+		}
 	}
 
 	class Stomping : State
@@ -111,6 +139,17 @@ namespace playerStateMechanics
 		public override void printName() { Debug.Log ("Stomping"); }
 		public override void jumpActions()
 		{
+		}
+
+		public override State collisionActions (Collision2D collision)
+		{
+			if (hittingEnemyFromAbove(collision))
+			{
+				GameObject.Destroy(collision.collider.gameObject);
+				return new StartSmallJump(playerInfo);
+			}
+
+			return this;
 		}
 		
 		public override State stateActions()

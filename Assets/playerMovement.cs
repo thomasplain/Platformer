@@ -11,6 +11,7 @@ public class playerMovement : MonoBehaviour {
 	static private GameObject player;
 
 	public float jumpForce = 1000f;
+	public float smallJumpForce = 300f;
 	public float projectileForce = 500f;
 	public float maxSpeed = 15f;
 	public GameObject projectilePrefab;
@@ -19,7 +20,7 @@ public class playerMovement : MonoBehaviour {
 	{
 		groundCheck = GameObject.FindGameObjectWithTag ("groundCheck");
 		player = GameObject.FindGameObjectWithTag ("Player");
-		playerState = new Grounded (new StateConstructorArgs(player, groundCheck, jumpForce, projectilePrefab, projectileForce));
+		playerState = new Grounded (new StateConstructorArgs(player, groundCheck, jumpForce, smallJumpForce, projectilePrefab, projectileForce));
 	}
 
 	void Update()
@@ -40,5 +41,10 @@ public class playerMovement : MonoBehaviour {
 		Vector3 horizontalVelocity = Vector3.right * h * maxSpeed * Time.deltaTime; 
 
 		transform.position += horizontalVelocity;	
+	}
+
+	void OnCollisionEnter2D(Collision2D collision)
+	{
+		playerState = playerState.collisionActions (collision);
 	}
 }

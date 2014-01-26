@@ -5,15 +5,29 @@ namespace playerStateMechanics
 	class StartJump : State
 	{
 		public StartJump(StateConstructorArgs constructorArgs) : base(constructorArgs) {}
-
+		
 		public override State stateActions ()
 		{
 			zeroPlayerVelocity ();
 			playerInfo.player.rigidbody2D.AddForce (Vector2.up * playerInfo.jumpForce);
 			return new Jumping (playerInfo);
 		}
-
+		
 	}
+
+	class StartSmallJump : State
+	{
+		public StartSmallJump(StateConstructorArgs constructorArgs) : base(constructorArgs) {}
+		
+		public override State stateActions ()
+		{
+			zeroPlayerVelocity ();
+			playerInfo.player.rigidbody2D.AddForce (Vector2.up * playerInfo.smallJumpForce);
+			return new Jumping (playerInfo);
+		}
+		
+	}
+
 	class Jumping : State
 	{
 		public Jumping(StateConstructorArgs constructorArgs) : base(constructorArgs) {}
