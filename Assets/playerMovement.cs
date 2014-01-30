@@ -2,6 +2,7 @@
 using System.Collections;
 
 using playerStateMechanics;
+using UnityGameEngineAdaptor;
 
 public class playerMovement : MonoBehaviour {
 
@@ -16,11 +17,17 @@ public class playerMovement : MonoBehaviour {
 	public float maxSpeed = 15f;
 	public GameObject projectilePrefab;
 
+	private UnityPlayerAdaptor playerAdaptor;
+
 	void Awake()
 	{
 		groundCheck = GameObject.FindGameObjectWithTag ("groundCheck");
 		player = GameObject.FindGameObjectWithTag ("Player");
-		playerState = new Grounded (new StateConstructorArgs(player, groundCheck, jumpForce, smallJumpForce, projectilePrefab, projectileForce));
+		playerAdaptor = new UnityPlayerAdaptor(player);
+		playerState = new Grounded (new StateConstructorArgs(player, groundCheck, 
+															jumpForce, smallJumpForce,
+															projectilePrefab, projectileForce,
+															playerAdaptor));
 	}
 
 	void Update()

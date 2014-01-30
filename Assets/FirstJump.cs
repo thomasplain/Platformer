@@ -4,18 +4,15 @@ namespace playerStateMechanics
 {
 	class StartJump : State
 	{
-		protected float jumpForceToUse;
 		protected State nextState;
 		public StartJump(StateConstructorArgs constructorArgs) : base(constructorArgs)
 		{
-			jumpForceToUse = playerInfo.jumpForce;
 			nextState = new Jumping(playerInfo);
 		}
 		
 		public override State stateActions ()
 		{
-			zeroPlayerVelocity ();
-			playerInfo.player.rigidbody2D.AddForce (Vector2.up * jumpForceToUse);
+			playerInfo.playerAdaptor.bigJump();
 			return nextState;
 		}
 		
@@ -23,9 +20,12 @@ namespace playerStateMechanics
 
 	class StartSmallJump : StartJump
 	{
-		public StartSmallJump(StateConstructorArgs constructorArgs) : base(constructorArgs)
+		public StartSmallJump(StateConstructorArgs constructorArgs) : base(constructorArgs){}
+
+		public override State stateActions()
 		{
-			jumpForceToUse = playerInfo.smallJumpForce;
+			playerInfo.playerAdaptor.smallJump();
+			return nextState;
 		}
 	}
 
@@ -35,17 +35,11 @@ namespace playerStateMechanics
 		
 		public override void printName() { Debug.Log ("Jumping"); }
 
-		public override void jumpActions()
-		{
-			zeroPlayerVelocity ();
-			playerInfo.player.rigidbody2D.AddForce (Vector2.up * playerInfo.jumpForce);
-		}
-
 		public override State stateActions ()
 		{
 			if (Input.GetButtonDown ("Jump"))
 			{
-				jumpActions ();
+				playerInfo.playerAdaptor.bigJump();
 				return new DoubleJumping (playerInfo);
 			}
 			else if (isOnDownwardArc())
@@ -60,7 +54,7 @@ namespace playerStateMechanics
 		
 		protected bool isOnDownwardArc()
 		{
-			return playerInfo.player.rigidbody2D.velocity.y <= 0;
+			return playerInfo.playerAdaptor.getYVelocity() <= 0;
 		}
 	}
 
@@ -74,7 +68,7 @@ namespace playerStateMechanics
 		{
 			if (Input.GetButtonDown ("Jump"))
 			{
-				jumpActions();
+				playerInfo.playerAdaptor.bigJump();
 				return new DoubleJumping(playerInfo);
 			}
 			else if (Input.GetButton("Jump"))
@@ -93,10 +87,6 @@ namespace playerStateMechanics
 		public FloatingAfterFirstJump(StateConstructorArgs constructorArgs) : base(constructorArgs) {}
 		
 		public override void printName() { Debug.Log ("FloatingAfterFirstJump"); }
-		public override void jumpActions()
-		{
-			playerInfo.player.rigidbody2D.velocity = new Vector2(playerInfo.player.rigidbody2D.velocity.x, -5);
-		}
 		
 		public override State stateActions()
 		{
@@ -106,7 +96,7 @@ namespace playerStateMechanics
 			}
 			else
 			{
-				jumpActions ();
+				playerInfo.playerAdaptor.slowDescent();
 				return this;
 			}
 		}

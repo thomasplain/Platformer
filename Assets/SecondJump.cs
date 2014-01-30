@@ -7,14 +7,7 @@ namespace playerStateMechanics
 		public DoubleJumping(StateConstructorArgs constructorArgs) : base(constructorArgs) {}
 		
 		public override void printName() { Debug.Log ("DoubleJumping"); }
-		public override void jumpActions()
-		{
-			// On downward arc
-			if (playerInfo.player.rigidbody2D.velocity.y <= 0)
-			{
-				playerInfo.player.rigidbody2D.velocity = new Vector2(playerInfo.player.rigidbody2D.velocity.x, -5);
-			}
-		}
+
 		public override State stateActions ()
 		{
 			if (isOnDownwardArc())

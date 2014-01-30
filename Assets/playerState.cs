@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using GameEngineAdaptor;
 
 namespace playerStateMechanics
 {
@@ -11,10 +12,12 @@ namespace playerStateMechanics
 		public float smallJumpForce;
 		public GameObject projectilePrefab;
 		public float projectileForce;
+		public IPlayerAdaptor playerAdaptor;
 
 		public StateConstructorArgs(GameObject playerArg, GameObject groundCheckArg,
 		                            float jumpForceArg, float smallJumpForceArg,
-		                            GameObject projectileArg, float projForceArg)
+		                            GameObject projectileArg, float projForceArg,
+		                            IPlayerAdaptor playerAdaptorArg)
 		{
 			player = playerArg;
 			groundCheck = groundCheckArg;
@@ -22,6 +25,7 @@ namespace playerStateMechanics
 			smallJumpForce = smallJumpForceArg;
 			projectilePrefab = projectileArg;
 			projectileForce = projForceArg;
+			playerAdaptor = playerAdaptorArg;
 		}
 	}
 
@@ -35,7 +39,6 @@ namespace playerStateMechanics
 			return false;
 		}
 
-		public virtual void jumpActions (){}
 		public virtual State keypressActions(){ return this; }
 		public abstract State stateActions ();
 		public virtual State collisionActions(Collision2D collision)
@@ -137,9 +140,6 @@ namespace playerStateMechanics
 		public Stomping(StateConstructorArgs constructorArgs) : base(constructorArgs) {}
 		
 		public override void printName() { Debug.Log ("Stomping"); }
-		public override void jumpActions()
-		{
-		}
 
 		public override State collisionActions (Collision2D collision)
 		{

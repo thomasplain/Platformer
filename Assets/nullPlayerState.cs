@@ -7,9 +7,6 @@ namespace playerStateMechanics
 		public nullPlayerState(StateConstructorArgs constructorArgs) : base(constructorArgs) {}
 
 		public override void printName() { Debug.Log ("Null"); }
-		public override void jumpActions ()
-		{
-		}
 
 		public override State stateActions ()
 		{
