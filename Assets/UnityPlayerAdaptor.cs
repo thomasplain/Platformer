@@ -6,11 +6,12 @@ namespace UnityGameEngineAdaptor
 
 	class UnityPlayerAdaptor : IPlayerAdaptor
 	{
-		public GameObject player;
+		private GameObject player;
+		private GameObject groundCheck;
 
 		public void jump(float force)
 		{
-			zeroPlayerVelocity ();
+			zeroPlayerYVelocity ();
 			player.rigidbody2D.AddForce (Vector2.up * force);
 		}
 
@@ -34,14 +35,10 @@ namespace UnityGameEngineAdaptor
 
 		}
 
-		public bool hasLandedOnGround()
-		{
-			return true;
-		}
-
-		public UnityPlayerAdaptor(GameObject playerArg)
+		public UnityPlayerAdaptor(GameObject playerArg, GameObject groundCheckArg)
 		{
 			player = playerArg;
+			groundCheck = groundCheckArg;
 		}
 		
 		public float getYVelocity()
@@ -54,7 +51,7 @@ namespace UnityGameEngineAdaptor
 			return player.rigidbody2D.velocity.x;
 		}
 
-		private void zeroPlayerVelocity()
+		private void zeroPlayerYVelocity()
 		{
 			player.rigidbody2D.velocity = new Vector2 (player.rigidbody2D.velocity.x, 0);
 		}

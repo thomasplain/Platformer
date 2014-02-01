@@ -20,7 +20,7 @@ namespace playerStateMechanics
 		
 		public override State stateActions()
 		{
-			if (!checkForGround())
+			if (!playerInfo.playerAdaptor.hasLandedOnGround())
 			{
 				return new FallingAfterFirstJump(playerInfo);
 			}

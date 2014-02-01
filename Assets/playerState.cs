@@ -41,16 +41,22 @@ namespace playerStateMechanics
 
 		public virtual State keypressActions(){ return this; }
 		public abstract State stateActions ();
-		public virtual State collisionActions(Collision2D collision)
+		public virtual State collisionActions(ICollisionAdaptor collision)
 		{ 
-			if (hittingEnemyFromAbove(collision))
+			if (collision.playerHasLandedOnEnemy())
 			{
-				GameObject.Destroy(collision.collider.gameObject);
+				collision.destroyOtherObject();
 				return new StartJump(playerInfo);
+			}
+
+			if (collision.playerHasLandedOnGround())
+			{
+				return new Grounded(playerInfo);
 			}
 
 			return this;
 		}
+
 		public State generalStateActions ()
 		{
 			float horizontal = Input.GetAxis ("Horizontal");
@@ -81,12 +87,6 @@ namespace playerStateMechanics
 				                                                           playerInfo.player.transform.rotation);
 				projectile.rigidbody2D.AddForce(relativeProjectileStartPosition * playerInfo.projectileForce);
 			}
-				
-			if (checkForGround ())
-			{
-					return new Grounded (playerInfo);
-			}
-
 
 			return new nullPlayerState (playerInfo);
 		}
@@ -94,44 +94,6 @@ namespace playerStateMechanics
 		public State(StateConstructorArgs constructorArgs)
 		{
 			playerInfo = constructorArgs;
-		}
-		
-		protected bool checkForGround()
-		{
-			int checkIndex = -1;
-			float playerSizeX = playerInfo.player.renderer.bounds.size.x;
-			while (checkIndex < 2)
-			{
-				Vector3 offset = Vector3.right * playerSizeX * checkIndex / 2f;
-				Vector3 fromPoint = playerInfo.player.transform.position + offset;
-				Vector3 toPoint = playerInfo.groundCheck.transform.position + offset;
-
-				if (Physics2D.Linecast (fromPoint, toPoint, 1 << LayerMask.NameToLayer("ground")))
-					return true;
-				else
-					checkIndex++;
-			}
-
-			return false;
-		}
-		
-		public void zeroPlayerVelocity()
-		{
-			playerInfo.player.rigidbody2D.velocity = new Vector2 (playerInfo.player.rigidbody2D.velocity.x, 0);
-		}
-
-		protected bool hittingEnemyFromAbove(Collision2D collision)
-		{
-			if (collision.collider.gameObject.tag != "enemy")
-								return false;
-
-			foreach (ContactPoint2D contactPoint in collision.contacts)
-			{
-				if (contactPoint.normal == Vector2.up)
-					return true;
-			}
-
-			return false;
 		}
 	}
 
@@ -141,12 +103,17 @@ namespace playerStateMechanics
 		
 		public override void printName() { Debug.Log ("Stomping"); }
 
-		public override State collisionActions (Collision2D collision)
+		public override State collisionActions (ICollisionAdaptor collision)
 		{
-			if (hittingEnemyFromAbove(collision))
+			if (collision.playerHasLandedOnEnemy())
 			{
-				GameObject.Destroy(collision.collider.gameObject);
+				collision.destroyOtherObject();
 				return new StartSmallJump(playerInfo);
+			}
+
+			if (collision.playerHasLandedOnGround())
+			{
+				return new Grounded(playerInfo);
 			}
 
 			return this;

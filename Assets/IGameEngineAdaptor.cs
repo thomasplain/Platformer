@@ -7,8 +7,14 @@ namespace GameEngineAdaptor
 		void smallJump();
 		void slowDescent();
 		void fireProjectile();
-		bool hasLandedOnGround();
 		float getYVelocity();
 		float getXVelocity();
+	}
+
+	interface ICollisionAdaptor
+	{
+		bool playerHasLandedOnGround();
+		bool playerHasLandedOnEnemy();
+		void destroyOtherObject();
 	}
 }

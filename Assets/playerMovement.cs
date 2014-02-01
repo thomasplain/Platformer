@@ -23,7 +23,7 @@ public class playerMovement : MonoBehaviour {
 	{
 		groundCheck = GameObject.FindGameObjectWithTag ("groundCheck");
 		player = GameObject.FindGameObjectWithTag ("Player");
-		playerAdaptor = new UnityPlayerAdaptor(player);
+		playerAdaptor = new UnityPlayerAdaptor(player, groundCheck);
 		playerState = new Grounded (new StateConstructorArgs(player, groundCheck, 
 															jumpForce, smallJumpForce,
 															projectilePrefab, projectileForce,
@@ -52,6 +52,6 @@ public class playerMovement : MonoBehaviour {
 
 	void OnCollisionEnter2D(Collision2D collision)
 	{
-		playerState = playerState.collisionActions (collision);
+		playerState = playerState.collisionActions (new UnityCollision2DAdaptor(collision));
 	}
 }
