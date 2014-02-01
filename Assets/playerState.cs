@@ -41,7 +41,7 @@ namespace playerStateMechanics
 
 		public virtual State keypressActions(){ return this; }
 		public abstract State stateActions ();
-		public virtual State collisionActions(ICollisionAdaptor collision)
+		public virtual State collisionEnterActions(ICollisionAdaptor collision)
 		{ 
 			if (collision.playerHasLandedOnEnemy())
 			{
@@ -54,6 +54,11 @@ namespace playerStateMechanics
 				return new Grounded(playerInfo);
 			}
 
+			return this;
+		}
+
+		public virtual State collisionExitActions(ICollisionAdaptor collision)
+		{
 			return this;
 		}
 
@@ -103,7 +108,7 @@ namespace playerStateMechanics
 		
 		public override void printName() { Debug.Log ("Stomping"); }
 
-		public override State collisionActions (ICollisionAdaptor collision)
+		public override State collisionEnterActions (ICollisionAdaptor collision)
 		{
 			if (collision.playerHasLandedOnEnemy())
 			{

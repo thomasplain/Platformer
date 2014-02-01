@@ -42,6 +42,11 @@ namespace UnityGameEngineAdaptor
 			GameObject.Destroy(collision.collider.gameObject);
 		}
 
+		public bool otherObjectIsGround()
+		{
+			return (collision.collider.gameObject.tag == "Floor");
+		}
+
 		public UnityCollision2DAdaptor(Collision2D collisionInstance)
 		{
 			collision = collisionInstance;

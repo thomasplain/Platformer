@@ -52,6 +52,11 @@ public class playerMovement : MonoBehaviour {
 
 	void OnCollisionEnter2D(Collision2D collision)
 	{
-		playerState = playerState.collisionActions (new UnityCollision2DAdaptor(collision));
+		playerState = playerState.collisionEnterActions (new UnityCollision2DAdaptor(collision));
+	}
+
+	void OnCollisionExit2D(Collision2D collision)
+	{
+		playerState = playerState.collisionExitActions (new UnityCollision2DAdaptor(collision));
 	}
 }

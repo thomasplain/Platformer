@@ -1,4 +1,5 @@
 using UnityEngine;
+using GameEngineAdaptor;
 
 namespace playerStateMechanics
 {
@@ -20,14 +21,17 @@ namespace playerStateMechanics
 		
 		public override State stateActions()
 		{
-			if (!playerInfo.playerAdaptor.hasLandedOnGround())
+			return this;
+		}
+
+		public override State collisionExitActions(ICollisionAdaptor collision)
+		{
+			if (collision.otherObjectIsGround())
 			{
 				return new FallingAfterFirstJump(playerInfo);
 			}
-			else
-			{
-				return this;
-			}
+
+			return this;
 		}
 	}
 }

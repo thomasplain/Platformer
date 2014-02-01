@@ -16,5 +16,7 @@ namespace GameEngineAdaptor
 		bool playerHasLandedOnGround();
 		bool playerHasLandedOnEnemy();
 		void destroyOtherObject();
+
+		bool otherObjectIsGround();
 	}
 }
