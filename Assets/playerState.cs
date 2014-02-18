@@ -78,19 +78,16 @@ namespace playerStateMechanics
 
 				if (vertical > 0)
 				{
-					relativeProjectileStartPosition.y = 1.25f;
+					playerInfo.playerAdaptor.fireProjectileUp();
 				}
-				else
+				else if  (horizontal >= 0)
 				{
-					horizontal = horizontal >= 0 ? 1 : -1;
-					relativeProjectileStartPosition.x = horizontal * 1.25f;
+					playerInfo.playerAdaptor.fireProjectileRight();
 				}
-
-				
-				GameObject projectile = (GameObject)GameObject.Instantiate(playerInfo.projectilePrefab, 
-				                                                           playerInfo.player.transform.position + relativeProjectileStartPosition,
-				                                                           playerInfo.player.transform.rotation);
-				projectile.rigidbody2D.AddForce(relativeProjectileStartPosition * playerInfo.projectileForce);
+				else if  (horizontal < 0)
+				{
+					playerInfo.playerAdaptor.fireProjectileLeft();
+				}
 			}
 
 			return new nullPlayerState (playerInfo);

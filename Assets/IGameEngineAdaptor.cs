@@ -6,7 +6,9 @@ namespace GameEngineAdaptor
 		void bigJump();
 		void smallJump();
 		void slowDescent();
-		void fireProjectile();
+		void fireProjectileUp();
+		void fireProjectileLeft();
+		void fireProjectileRight();
 		float getYVelocity();
 		float getXVelocity();
 	}

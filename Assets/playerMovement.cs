@@ -23,7 +23,7 @@ public class playerMovement : MonoBehaviour {
 	{
 		groundCheck = GameObject.FindGameObjectWithTag ("groundCheck");
 		player = GameObject.FindGameObjectWithTag ("Player");
-		playerAdaptor = new UnityPlayerAdaptor(player, groundCheck);
+		playerAdaptor = new UnityPlayerAdaptor(player, groundCheck, projectilePrefab);
 		playerState = new Grounded (new StateConstructorArgs(player, groundCheck, 
 															jumpForce, smallJumpForce,
 															projectilePrefab, projectileForce,
