@@ -3,4 +3,6 @@ Temp/
 *.sln
 *.userprefs
 *.csproj
+*.sublime-project
+*.sublime-workspace
 
